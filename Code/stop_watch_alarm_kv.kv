@@ -1,0 +1,190 @@
+<StopWatch>:
+    Screen:
+        NavigationLayout:
+            ScreenManager:
+                Screen:
+                    BoxLayout:
+                        orientation: "vertical"
+                        MDToolbar:
+                            title: "Stop Watch"
+                            left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
+                            elevation: 10
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            MDBoxLayout:
+                                orientation: "vertical"
+                                size_hint_y: .9
+                                spacing: 10
+                                padding: 10
+                                MDBoxLayout:
+                                    orientation: "vertical"
+                                    size_hint_y: .1
+                                    MDLabel:
+                                        id: stop_watch_time
+                                        text: "00:00.00"
+                                        bold: True
+                                        font_size: 40
+                                        halign: "center"
+                                        theme_text_color: "Custom"
+                                        text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                                MDBoxLayout:
+                                    orientation: "horizontal"
+                                    size_hint_y: .1
+                                    spacing: 10
+                                    MDRaisedButton:
+                                        id: stop_watch_start
+                                        text: "Start"
+                                        font_size: 20
+                                        bold: True
+                                        size_hint: 1, 1
+                                        pos_hint: {"center_x": .5, "center_y": .5}
+                                        on_release: root.start_stop_watch()
+                                    MDRaisedButton:
+                                        id: stop_watch_lap
+                                        text: "Lap"
+                                        font_size: 20
+                                        bold: True
+                                        size_hint: 1, 1
+                                        disabled: True
+                                        pos_hint: {"center_x": .5, "center_y": .5}
+                                        on_release: root.lap_stop_watch()
+                                MDBoxLayout:
+                                    orientation: "vertical"
+                                    size_hint_y: .8
+                                    Screen:
+                                        ScrollView:
+                                            MDList:
+                                                theme_text_color: "Custom"
+                                                text_color: 1, 1, 1, 1
+                                                id: stop_watch_container
+                            MDBoxLayout:
+                                orientation: "horizontal"
+                                size_hint_y: .1
+                                spacing: 10
+                                RectangularElevationButton:
+                                    elevation: 11
+                                    MDBoxLayout:
+                                        orientation: "vertical"
+                                        MDIconButton:
+                                            icon: "alarm"
+                                            size_hint_y: .5
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            on_release: app.root.current = "Alarm Clock"
+                                        MDLabel:
+                                            text: "Alarm Clock"
+                                            size_hint_y: .5
+                                            text_color: 0, 0, 0, 0
+                                            pos_hint: {"center_x": .8, "center_y": .2}
+                                    MDBoxLayout:
+                                        orientation: "vertical"
+                                        MDIconButton:
+                                            icon: "earth"
+                                            size_hint_y: .5
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            on_release: app.root.current = "World Clock"
+                                        MDLabel:
+                                            text: "World Clock"
+                                            size_hint_y: .5
+                                            text_color: 0, 0, 0, 0
+                                            pos_hint: {"center_x": .8, "center_y": .5}
+                                    MDBoxLayout:
+                                        orientation: "vertical"
+                                        MDIconButton:
+                                            icon: "watch"
+                                            size_hint_y: .5
+                                            theme_text_color: "Custom"
+                                            text_color: app.theme_cls.primary_color
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            on_release: app.root.current = "Stop Watch"
+                                        MDLabel:
+                                            text: "Stop Watch"
+                                            size_hint_y: .5
+                                            theme_text_color: "Custom"
+                                            text_color: app.theme_cls.primary_color
+                                            pos_hint: {"center_x": .8, "center_y": .5}
+                                    MDBoxLayout:
+                                        orientation: "vertical"
+                                        MDIconButton:
+                                            icon: "timer"
+                                            size_hint_y: .5
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            on_release: app.root.current = "Timer"
+                                        MDLabel:
+                                            text: "Timer"
+                                            text_color: 0, 0, 0, 0
+                                            size_hint_y: .5
+                                            pos_hint: {"center_x": .9, "center_y": .5}
+            MDNavigationDrawer:
+                id: nav_drawer
+                ScrollView:
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        padding: dp(10)
+                        spacing: dp(10)
+                        MDLabel:
+                            text: "Alarm App"
+                            bold: True
+                            size_hint_y: .1
+                            font_style: "H6"
+                            halign: "center"
+                            theme_text_color: "Custom"
+                            text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                        MDRaisedButton:
+                            text: "Alarm Clock"
+                            bold: True
+                            theme_text_color: "Custom"
+                            text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                            md_bg_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Light" else [0, 0, 0, 1]
+                            on_release: app.root.current = "Alarm Clock"
+                            size_hint: (1, .1)
+                        MDRaisedButton:
+                            text: "World Clock"
+                            bold: True
+                            theme_text_color: "Custom"
+                            text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                            md_bg_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Light" else [0, 0, 0, 1]
+                            on_release: app.root.current = "World Clock"
+                            size_hint: (1, .1)
+                        MDRaisedButton:
+                            text: "Stop Watch"
+                            bold: True
+                            theme_text_color: "Custom"
+                            text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                            md_bg_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Light" else [0, 0, 0, 1]
+                            on_release: app.root.current = "Stop Watch"
+                            size_hint: (1, .1)
+                        MDRaisedButton:
+                            text: "Timer"
+                            bold: True
+                            theme_text_color: "Custom"
+                            text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                            md_bg_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Light" else [0, 0, 0, 1]
+                            on_release: app.root.current = "Timer"
+                            size_hint: (1, .1)
+                        MDBoxLayout:
+                            orientation: "horizontal"
+                            size_hint: (1, .1)
+                            MDLabel:
+                                text: "Dark Theme"
+                                bold: True
+                                theme_text_color: "Custom"
+                                text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                            MDSwitch:
+                                id: change_theme_switch
+                                widget_style: "ios" if change_theme_switch.device_ios else "android"
+                                active: False if app.theme_cls.theme_style == "Light" else "True"
+                                on_active: app.change_theme(change_theme_switch.active)
+                        MDLabel:
+                            text: ""
+                            size_hint_y: .2
+                        MDLabel:
+                            text: "Created By MOHD SOHAIL AHMED"
+                            font_style: "Subtitle1"
+                            halign: "center"
+                            bold: True
+                            size_hint_y: .1
+                            theme_text_color: "Custom"
+                            text_color: [1, 1, 1, 1] if app.theme_cls.theme_style == "Dark" else [0, 0, 0, 1]
+                        MDLabel:
+                            text: ""
+                            size_hint_y: .1
