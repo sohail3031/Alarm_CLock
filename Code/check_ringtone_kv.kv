@@ -1,0 +1,15 @@
+<Item@MDFlatButton>:
+    on_release: root.file_manager_open()
+    ImageLeftWidget:
+        source: root.source
+
+<ItemConfirm>:
+    on_release: root.set_icon(check, root.text)
+    CheckboxLeftWidget:
+        id: check
+        group: "check"
+        on_active: root.display_results(root.text)
+
+<ShowAllRingtones>:
+    MDFloatLayout:
+        ItemConfirm:
