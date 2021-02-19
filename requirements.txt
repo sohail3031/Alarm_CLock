@@ -1,0 +1,5 @@
+pytz==2019.3
+Kivy==1.11.1
+pygame==1.9.6
+win10toast==0.9
+kivymd==0.104.1
