@@ -10,10 +10,14 @@ from kivy.core.window import Window
 from kivymd.toast import toast
 from pygame import mixer
 
+import os
+import shutil
+
 Builder.load_file("check_ringtone_kv.kv")
 
 selected_ringtone = []
 selected = 0
+dialog = None
 mixer.init()
 
 
@@ -36,20 +40,15 @@ class Item(OneLineAvatarListItem):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
-            # preview=True,
         )
-
-    # def add_new_ringtone(self):
-    #     pass
-    # path = "/"
-    # file_manager = MDFileManager(exit_manager=self.exit_manager, select_path=self.select_path)
-    # file_manager.close()
+        self.file_manager.ext = [".mp3"]
 
     def file_manager_open(self):
         self.file_manager.show('/')  # output manager to the screen
         self.manager_open = True
 
     def select_path(self, path):
+        global dialog
         '''It will be called when you click on the file name
         or the catalog selection button.
 
@@ -58,8 +57,17 @@ class Item(OneLineAvatarListItem):
         '''
 
         self.exit_manager()
-        toast(path)
-        print(path)
+        if ".mp3" not in path:
+            toast("Please select a valid .mp3 file for ringtone")
+        else:
+            destination = os.getcwd().replace('\\', '/')
+            with open("all_alarms_ringtone.txt", "r") as file:
+                data = file.readlines()
+            shutil.copyfile(path, f"{destination}/ringtones/Alarm {len(data) + 1}.mp3")
+            with open("all_alarms_ringtone.txt", "a") as file:
+                file.write(f"\nAlarm {len(data) + 1}")
+            toast("New ringtone is added. Restart app to apply changes.")
+            dialog.dismiss()
 
     def exit_manager(self, *args):
         '''Called when the user reaches the root of the directory tree.'''
@@ -102,20 +110,19 @@ class ItemConfirm(OneLineAvatarIconListItem):
 
 
 class ShowAllRingtones:
-    dialog = None
-
     def show_confirmation_dialog(self):
+        global dialog
         with open("all_alarms_ringtone.txt", "r") as file:
             data = file.readlines()
-        if not self.dialog:
-            self.dialog = MDDialog(
+        if not dialog:
+            dialog = MDDialog(
                 title="Alarm ringtone",
                 type="confirmation",
                 items=[*[ItemConfirm(text=i) for i in data],
                        Item(text="Add Ringtone", source="images/new_add_icon.png")],
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", on_release=lambda _: self.dialog.dismiss(), on_press=self.stop_music
+                        text="CANCEL", on_release=lambda _: dialog.dismiss(), on_press=self.stop_music
                     ),
                     MDFlatButton(
                         text="OK", on_release=self.save_new_ringtone, on_press=self.stop_music
@@ -123,13 +130,14 @@ class ShowAllRingtones:
                 ],
             )
 
-        self.dialog.open()
+        dialog.open()
 
     def stop_music(self, inst):
         mixer.music.stop()
 
     def save_new_ringtone(self, inst):
+        global dialog
         if (selected == -1) or (selected == -2):
             with open("selected_alarm_ringtone.txt", "w") as file:
                 file.write(selected_ringtone[selected])
-        self.dialog.dismiss()
+        dialog.dismiss()
