@@ -6,7 +6,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.picker import MDTimePicker
-from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem, ILeftBodyTouch
+from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem, ILeftBodyTouch, TwoLineAvatarIconListItem
 from threading import Thread
 from datetime import datetime
 from pygame import mixer
@@ -34,7 +34,7 @@ class RightSwitch(IRightBodyTouch, MDBoxLayout):
     '''Custom right container.'''
 
 
-class CustomOneLineListItemAlarm(OneLineAvatarIconListItem):
+class CustomOneLineListItemAlarm(TwoLineAvatarIconListItem):
     '''Custom list item.'''
 
     def __init__(self, **kwargs):
@@ -70,7 +70,8 @@ class CustomOneLineListItemAlarm(OneLineAvatarIconListItem):
                 if file:
                     for i in data:
                         if text in i:
-                            file.write(f"{i.split('---')[0]}---{'on' if status else 'off'}\n")
+                            file.write(
+                                f"{i.split('---')[0]}---{i.split('---')[1]}---{'on' if status else 'off'}\n")
                         else:
                             file.write(f"{i}")
 
@@ -94,6 +95,10 @@ class Days(OneLineAvatarIconListItem):
         for check in check_list:
             if check != instance_check:
                 check.active = False
+            else:
+                check.active = True
+        if text not in add_weekdays:
+            add_weekdays.append(text)
 
     def display_results(self, checkbox, status):
         if status:
@@ -106,46 +111,10 @@ class AddEmptySpace(OneLineAvatarIconListItem):
     divider = None
 
 
-class WeekDays:
+class AlarmClock(Screen):
     dialog = None
     week_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
-    def open_weekdays_dialog(self):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title="Select Days",
-                type="confirmation",
-                items=[
-                    *[Days(text=i) for i in self.week_days],
-                    *[AddEmptySpace(text="") for i in range(4)]
-                ],
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL", on_press=self.cancel_button_clicked, on_release=lambda _: self.dialog.dismiss()
-                    ),
-                    MDFlatButton(
-                        text="OK", on_release=self.ok_button_clicked
-                    ),
-                ],
-            )
-
-        self.dialog.open()
-
-    def ok_button_clicked(self, instance):
-        global flag
-        if add_weekdays:
-            flag = True
-            self.dialog.dismiss()
-        else:
-            flag = False
-            self.dialog.dismiss()
-
-    def cancel_button_clicked(self, instance):
-        global flag
-        flag = False
-
-
-class AlarmClock(Screen):
     def __init__(self, **kwargs):
         super(AlarmClock, self).__init__(**kwargs)
         self.ids.rv.data = []
@@ -175,8 +144,9 @@ class AlarmClock(Screen):
             with open("my_alarm_save.txt", "r") as file:
                 data = file.readlines()
                 date = datetime.now().strftime("%H:%M:%S")
+                day = datetime.now().strftime("%A")
                 for i in data:
-                    if (date in i) and ("on" in i):
+                    if (date in i) and ("on" in i) and (day in i):
                         self.show_dialog(text="Time's Up")
                         with open("selected_alarm_ringtone.txt", "r") as file:
                             data = file.readlines()
@@ -184,12 +154,19 @@ class AlarmClock(Screen):
                         mixer.music.load(f"ringtones/{name}.mp3")
                         mixer.music.play()
 
-    def search_alarms(self, text="", status=True):
-        def add_alarms(alarm_time):
+    def search_alarms(self, text="", status=True, days=None):
+        if days is None:
+            days = []
+
+        def add_alarms(alarm_time, alarm_days=None):
+            if alarm_days is None:
+                alarm_days = []
+
             self.ids.rv.data.append(
                 {
                     "viewclass": "CustomOneLineListItemAlarm",
                     "text": alarm_time,
+                    "secondary_text": ", ".join(alarm_days),
                     "callback": lambda x: x,
                 }
             )
@@ -197,10 +174,10 @@ class AlarmClock(Screen):
         if status:
             with open("my_alarm_save.txt", "r") as file:
                 for i in file.readlines():
-                    add_alarms(i.split("---")[0])
+                    add_alarms(alarm_time=i.split("---")[0], alarm_days=i.split("---")[1].split(" "))
         else:
             toast(f"Alarm set at time {text}")
-            add_alarms(str(text))
+            add_alarms(str(text), alarm_days=days)
 
     def show_time_picker(self, flag=False):
         time_dialog = MDTimePicker()
@@ -211,7 +188,35 @@ class AlarmClock(Screen):
         time_dialog.open()
 
     def get_time(self, instance, time):
-        WeekDays().open_weekdays_dialog()
-        with open("my_alarm_save.txt", "a") as file:
-            file.write(f"{str(time)}---on\n")
-        self.search_alarms(text=time, status=False)
+        global alarm_time
+        alarm_time = time
+        self.open_weekdays_dialog()
+
+    def open_weekdays_dialog(self):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                title="Select Days",
+                type="confirmation",
+                items=[
+                    *[Days(text=i) for i in self.week_days],
+                    *[AddEmptySpace(text="") for i in range(4)]
+                ],
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", on_release=lambda _: self.dialog.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", on_release=self.ok_button_clicked
+                    ),
+                ],
+            )
+
+        self.dialog.open()
+
+    def ok_button_clicked(self, instance):
+        global alarm_time
+        if add_weekdays:
+            with open("my_alarm_save.txt", "a") as file:
+                file.write(f"{str(alarm_time)}---{' '.join(add_weekdays)}---on\n")
+            self.search_alarms(text=alarm_time, status=False, days=add_weekdays)
+        self.dialog.dismiss()
